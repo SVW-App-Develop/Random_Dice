@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:random_dice/screen/home_screen.dart';
+import 'package:random_dice/screen/settings_screen.dart';
+
+class RootScreen extends StatefulWidget {   // StatelessWidget -> StatefulWidget
+  const RootScreen({Key? key}) : super(key: key);
+
+  @override
+  State<RootScreen> createState() => _RootScreenState();
+}
+
+// TickerProviderStateMixin 사용
+class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
+  TabController? controller;    // 사용할 TabController 선언
+  double threshold = 2.7;       // 민감도의 기본값 설정
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    controller = TabController(length: 2, vsync: this); // 컨트롤러 초기화
+
+    // 컨트롤러 속성이 변경될 때마다 실행할 함수 등록
+    controller!.addListener(tabListener);
+  }
+
+  tabListener() {   // 리스너로 사용할 함수
+    setState(() {});
+  }
+
+  @override
+  dispose(){
+    controller!.removeListener(tabListener());  // 리스너에 등록한 함수 등록 취소
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: TabBarView(   // 탭 화면을 보여줄 위젯
+        controller: controller,   // 컨트롤러 등록
+        children: renderChildren(),
+      ),
+      // 아래 탭 내비게이션을 구현하는 매개변수
+      bottomNavigationBar: renderBottomNavigation(),
+    );
+  }
+
+  List<Widget> renderChildren() {
+    return [
+      // 첫 번째 Container 삭제
+      // Container(    // 홈 탭
+      //   child: Center(
+      //     child: Text(
+      //       'Tab 1',
+      //       style: TextStyle(
+      //         color: Colors.white,
+      //       ),
+      //     ),
+      //   ),
+      // ),
+      // HomeScreen 불러와 입력
+      HomeScreen(number: 1),
+      // 두 번째 Container 삭제
+      // Container(    // 설정 스크린 탭
+      //   child: Center(
+      //     child: Text(
+      //       'Tab 2',
+      //       style: TextStyle(
+      //         color: Colors.white,
+      //       ),
+      //     ),
+      //   ),
+      // ),
+      SettingsScreen(   // 두 번째 Container 대체
+        threshold: threshold,
+        onThresholdChange: onThresholdChange,
+      ),
+    ];
+  }
+
+  // 슬라이더값 변경 시 실행 함수
+  void onThresholdChange(double val) {
+    setState(() {
+      threshold = val;
+    });
+  }
+
+  BottomNavigationBar renderBottomNavigation() {
+    // 탭 내비게이션을 구현하는 위젯
+    return BottomNavigationBar(
+      // 현재 화면에 렌더링되는 탭의 인덱스
+      currentIndex: controller!.index,
+        onTap: (int index) {    // 탭이 선택될 때마다 실행되는 함수
+          setState((){
+            controller!.animateTo(index);
+          });
+        },
+        items: [
+          BottomNavigationBarItem(    // 하단 탭바의 각 버튼 구현
+            icon: Icon(
+              Icons.edgesensor_high_outlined,
+            ),
+            label: '주사위',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.settings,
+            ),
+            label: '설정',
+          ),
+        ],
+    );
+  }
+}
